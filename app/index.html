@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>ArtVerse</title>
+    <link rel="stylesheet" href="index.css">
+    <link rel="stylesheet" href="banner/banner.css">
+    <link rel="stylesheet" href="banner/toolbar/toolbar.css">
+    <link rel="stylesheet" href="banner/toolbar/tool/tool.css">
+    <link rel="stylesheet" href="banner/toolbar/tool/tool-image/tool-image.css">
+    <link rel="stylesheet" href="workspace/workspace.css">
+    <link rel="stylesheet" href="workspace/canvas-container/canvas-container.css">
+    <link rel="stylesheet" href="workspace/canvas-container/canvas/canvas.css">
+    <link rel="stylesheet" href="workspace/canvas-container/east-resizer/east-resizer.css">
+    <link rel="stylesheet" href="workspace/canvas-container/south-east-resizer/south-east-resizer.css">
+    <link rel="stylesheet" href="workspace/canvas-container/south-resizer/south-resizer.css">
+    <link rel="stylesheet" href="workspace/canvas-container/south-west-resizer/south-west-resizer.css">
+    <link rel="stylesheet" href="workspace/canvas-container/west-resizer/west-resizer.css">
+</head>
+<body>
+<script type="module">
+    import init, {entry_point} from './art_verse.js';
+
+    await init();
+    entry_point();
+</script>
+<div id="banner">
+    <div id="toolbar">
+        <div id="pencil" class="tool">
+            <svg class="tool-image" viewBox="0 0 50 50">
+                <path d="M 31 1 L 10 22 L 1 49 L 28 40 L 49 19" fill="none" stroke="black" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+                <path d="M 10 22 Q 22 28, 28 40" fill="none" stroke="black" stroke-width="2"/>
+                <path d="M 4 41 L 1 49 L 9 46 Q 7.5 42.5, 4 41" fill="black"/>
+            </svg>
+        </div>
+        <div id="line" class="tool">
+            <svg class="tool-image" viewBox="0 0 50 50">
+                <path d="M 49 1 L 1 49" fill="none" stroke="black" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+        </div>
+    </div>
+</div>
+<div id="workspace">
+    <div id="canvas-container">
+        <div id="west-resizer" class="resizer"></div>
+        <canvas id="canvas" width="250" height="250">
+        </canvas>
+        <div id="east-resizer" class="resizer"></div>
+        <div id="south-west-resizer" class="resizer"></div>
+        <div id="south-resizer" class="resizer"></div>
+        <div id="south-east-resizer" class="resizer"></div>
+    </div>
+</div>
+</body>
+</html>
