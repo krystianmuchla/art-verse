@@ -8,7 +8,7 @@ use web_sys::{CanvasRenderingContext2d, HtmlCanvasElement, MouseEvent};
 use crate::canvas;
 use crate::dom::Dom;
 use crate::point::Point;
-use crate::tool::line;
+use crate::tool;
 
 pub fn init(
     dom: Rc<Dom>,
@@ -70,13 +70,13 @@ fn advance(
         Box::new(
             move |mouse_event: MouseEvent| {
                 let point_b = canvas::point_on_canvas(Rc::clone(&canvas), &mouse_event);
-                let path = canvas::path_on_canvas(
+                let segment = canvas::segment_on_canvas(
                     Rc::clone(&canvas),
                     point_a.borrow().clone(),
                     point_b.clone(),
                 );
-                if let Some(path) = path {
-                    line::put(Rc::clone(&image_vec), canvas.width(), path);
+                if let Some(segment) = segment {
+                    tool::line::put(Rc::clone(&image_vec), canvas.width(), segment);
                     canvas::put_image_vec(Rc::clone(&canvas), Rc::clone(&context), Rc::clone(&image_vec));
                 }
                 *point_a.borrow_mut() = point_b;

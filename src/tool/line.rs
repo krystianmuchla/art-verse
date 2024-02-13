@@ -8,7 +8,7 @@ use web_sys::{CanvasRenderingContext2d, HtmlCanvasElement, MouseEvent};
 use crate::canvas;
 use crate::color::Color;
 use crate::dom::Dom;
-use crate::path::Path;
+use crate::segment::Segment;
 use crate::point::Point;
 
 pub fn init(
@@ -30,10 +30,10 @@ pub fn init(
 pub fn put(
     image_vec: Rc<RefCell<Clamped<Vec<u8>>>>,
     image_width: u32,
-    path: Path,
+    segment: Segment,
 ) {
-    let point_a = path.a;
-    let point_b = path.b;
+    let point_a = segment.a;
+    let point_b = segment.b;
     let color = Color { r: 0, g: 0, b: 0, a: 255 };
     let arg_0: i32;
     let val_0: i32;
@@ -137,9 +137,17 @@ fn start(
     Closure::wrap(
         Box::new(
             move |mouse_event: MouseEvent| {
+                dom.body.set_onmousedown(None);
                 let point_a = canvas::point_on_canvas(Rc::clone(&canvas), &mouse_event);
                 let point_a = Rc::new(point_a);
-                dom.body.set_onmousedown(None);
+                let advance = advance(
+                    Rc::clone(&canvas),
+                    Rc::clone(&context),
+                    Rc::clone(&image_vec),
+                    Rc::clone(&point_a),
+                );
+                dom.body.set_onmousemove(Some(advance.as_ref().unchecked_ref()));
+                advance.forget();
                 let end = end(
                     Rc::clone(&dom),
                     Rc::clone(&canvas),
@@ -155,6 +163,32 @@ fn start(
     )
 }
 
+fn advance(
+    canvas: Rc<HtmlCanvasElement>,
+    context: Rc<CanvasRenderingContext2d>,
+    image_vec: Rc<RefCell<Clamped<Vec<u8>>>>,
+    point_a: Rc<Point>,
+) -> Closure<dyn FnMut(MouseEvent)> {
+    Closure::wrap(
+        Box::new(
+            move |mouse_event: MouseEvent| {
+                let image_vec_clone = Rc::new(RefCell::new(image_vec.borrow().clone()));
+                let segment = canvas::segment_on_canvas(
+                    Rc::clone(&canvas),
+                    (*point_a).clone(),
+                    canvas::point_on_canvas(Rc::clone(&canvas), &mouse_event),
+                );
+                if let Some(segment) = segment {
+                    put(Rc::clone(&image_vec_clone), canvas.width(), segment);
+                    canvas::put_image_vec(Rc::clone(&canvas), Rc::clone(&context), Rc::clone(&image_vec_clone));
+                } else {
+                    canvas::put_image_vec(Rc::clone(&canvas), Rc::clone(&context), Rc::clone(&image_vec));
+                }
+            }
+        ) as Box<dyn FnMut(MouseEvent)>
+    )
+}
+
 fn end(
     dom: Rc<Dom>,
     canvas: Rc<HtmlCanvasElement>,
@@ -165,17 +199,18 @@ fn end(
     Closure::wrap(
         Box::new(
             move |mouse_event: MouseEvent| {
-                let path = canvas::path_on_canvas(
+                dom.body.set_onmousemove(None);
+                dom.body.set_onmouseup(None);
+                dom.body.set_onmouseleave(None);
+                let segment = canvas::segment_on_canvas(
                     Rc::clone(&canvas),
                     (*point_a).clone(),
                     canvas::point_on_canvas(Rc::clone(&canvas), &mouse_event),
                 );
-                if let Some(path) = path {
-                    put(Rc::clone(&image_vec), canvas.width(), path);
+                if let Some(segment) = segment {
+                    put(Rc::clone(&image_vec), canvas.width(), segment);
                     canvas::put_image_vec(Rc::clone(&canvas), Rc::clone(&context), Rc::clone(&image_vec));
                 }
-                dom.body.set_onmouseup(None);
-                dom.body.set_onmouseleave(None);
                 let start = start(
                     Rc::clone(&dom),
                     Rc::clone(&canvas),

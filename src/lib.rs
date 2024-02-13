@@ -12,7 +12,8 @@ mod dom;
 mod point;
 mod tool;
 mod color;
-mod path;
+mod line;
+mod segment;
 mod resizer;
 
 #[wasm_bindgen]
