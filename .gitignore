@@ -1,3 +1,5 @@
+.idea
+.vscode
 pkg
 target
 Cargo.lock

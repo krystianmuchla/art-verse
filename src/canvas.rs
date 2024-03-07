@@ -31,15 +31,17 @@ pub fn entry_point(dom: Rc<Dom>) {
         canvas.width() as f64,
         canvas.height() as f64,
     ).unwrap();
-    let image_data = Rc::new(RefCell::new(image_data));
-    let image_vec = Rc::new(RefCell::new(image_data.borrow().data()));
+    let image_vec = Rc::new(RefCell::new(image_data.data()));
+    let tool_events = Rc::new(RefCell::new(tool::Events::new()));
     resizer::entry_point(
+        Rc::clone(&tool_events),
         Rc::clone(&dom),
         Rc::clone(&canvas),
         Rc::clone(&context),
-        Rc::clone(&image_data),
+        Rc::clone(&image_vec),
     );
     tool::entry_point(
+        Rc::clone(&tool_events),
         Rc::clone(&dom),
         Rc::clone(&canvas),
         Rc::clone(&context),
