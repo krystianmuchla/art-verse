@@ -8,13 +8,16 @@ use web_sys::window;
 use crate::dom::Dom;
 
 mod canvas;
-mod dom;
-mod point;
-mod tool;
 mod color;
+mod context;
+mod dom;
+mod image;
+mod image_vec;
 mod line;
-mod segment;
+mod point;
 mod resizer;
+mod segment;
+mod tool;
 
 #[wasm_bindgen]
 extern "C" {
@@ -28,10 +31,6 @@ pub fn entry_point() {
     let window = window().unwrap();
     let document = window.document().unwrap();
     let body = document.body().unwrap();
-    let dom = Rc::new(Dom {
-        window,
-        document,
-        body,
-    });
+    let dom = Rc::new(Dom::new(window, document, body));
     canvas::entry_point(Rc::clone(&dom));
 }

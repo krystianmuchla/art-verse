@@ -5,3 +5,13 @@ pub struct Dom {
     pub document: Document,
     pub body: HtmlElement,
 }
+
+impl Dom {
+    pub fn new(window: Window, document: Document, body: HtmlElement) -> Dom {
+        Dom {
+            window,
+            document,
+            body,
+        }
+    }
+}

@@ -2,20 +2,22 @@ use std::cell::RefCell;
 use std::rc::Rc;
 
 use wasm_bindgen::closure::Closure;
-use wasm_bindgen::{Clamped, JsCast};
+use wasm_bindgen::JsCast;
 use web_sys::{
     CanvasRenderingContext2d, DomRect, Element, HtmlCanvasElement, HtmlElement, MouseEvent,
 };
 
 use crate::dom::Dom;
-use crate::{canvas, tool};
+use crate::image::Image;
+use crate::point::Point;
+use crate::{context, image_vec, tool};
 
 pub fn entry_point(
     tool_events: Rc<RefCell<tool::Events>>,
     dom: Rc<Dom>,
     canvas: Rc<HtmlCanvasElement>,
     context: Rc<CanvasRenderingContext2d>,
-    image_vec: Rc<RefCell<Clamped<Vec<u8>>>>,
+    image: Rc<RefCell<Image>>,
 ) {
     let resizers = dom.document.get_elements_by_class_name("resizer");
     for resizer_index in 0..resizers.length() {
@@ -29,7 +31,7 @@ pub fn entry_point(
             Rc::clone(&dom),
             Rc::clone(&canvas),
             Rc::clone(&context),
-            Rc::clone(&image_vec),
+            Rc::clone(&image),
         );
         resizer.set_onmousedown(Some(init_canvas_resize.as_ref().unchecked_ref()));
         init_canvas_resize.forget();
@@ -41,7 +43,7 @@ fn init_canvas_resize(
     dom: Rc<Dom>,
     canvas: Rc<HtmlCanvasElement>,
     context: Rc<CanvasRenderingContext2d>,
-    image_vec: Rc<RefCell<Clamped<Vec<u8>>>>,
+    image: Rc<RefCell<Image>>,
 ) -> Closure<dyn FnMut(MouseEvent)> {
     Closure::wrap(Box::new(move |mouse_event: MouseEvent| {
         mouse_event.prevent_default();
@@ -87,8 +89,9 @@ fn init_canvas_resize(
             Rc::clone(&dom),
             Rc::clone(&canvas),
             Rc::clone(&context),
-            Rc::clone(&image_vec),
+            Rc::clone(&image),
             Rc::clone(&sketch),
+            Rc::clone(&resizer_id),
         );
         dom.body
             .set_onmouseup(Some(resize_canvas.as_ref().unchecked_ref()));
@@ -202,21 +205,24 @@ fn resize_canvas(
     dom: Rc<Dom>,
     canvas: Rc<HtmlCanvasElement>,
     context: Rc<CanvasRenderingContext2d>,
-    image_vec: Rc<RefCell<Clamped<Vec<u8>>>>,
+    image: Rc<RefCell<Image>>,
     sketch: Rc<HtmlElement>,
+    resizer_id: Rc<String>,
 ) -> Closure<dyn FnMut()> {
     Closure::<dyn FnMut()>::new(move || {
         let sketch_rect = sketch.get_bounding_client_rect();
-        let new_width = sketch_rect.width() as u32;
-        let new_height = sketch_rect.height() as u32;
-        canvas.set_width(new_width);
-        canvas.set_height(new_height);
-        adjust_image_vec(Rc::clone(&image_vec), &new_width, &new_height);
-        canvas::put_image_vec(
-            Rc::clone(&canvas),
-            Rc::clone(&context),
-            Rc::clone(&image_vec),
+        let sketch_width = sketch_rect.width() as u32;
+        let sketch_height = sketch_rect.height() as u32;
+        adjust_image(
+            &*canvas,
+            &mut *image.borrow_mut(),
+            &sketch_width,
+            &sketch_height,
+            &*resizer_id,
         );
+        canvas.set_width(sketch_width);
+        canvas.set_height(sketch_height);
+        context::apply_image(&*context, &image.borrow());
         sketch.remove();
         dom.body.set_onmousemove(None);
         dom.body.set_onmouseup(None);
@@ -225,13 +231,63 @@ fn resize_canvas(
     })
 }
 
-fn adjust_image_vec(image_vec: Rc<RefCell<Clamped<Vec<u8>>>>, new_width: &u32, new_height: &u32) {
-    let blank_image_vec = blank_image_vec(new_width, new_height);
-    // todo figure out
-    *image_vec.borrow_mut() = blank_image_vec;
-}
-
-fn blank_image_vec(width: &u32, height: &u32) -> Clamped<Vec<u8>> {
-    let channels = *width * *height * 4;
-    Clamped(vec![255; channels as usize])
+fn adjust_image(
+    canvas: &HtmlCanvasElement,
+    image: &mut Image,
+    sketch_width: &u32,
+    sketch_height: &u32,
+    resizer_id: &String,
+) {
+    let image_width = canvas.width() as i32;
+    let image_height = canvas.height() as i32;
+    let x0: i32;
+    let y0: i32 = 0;
+    let x1: i32;
+    let y1: i32;
+    let x2: i32;
+    let y2: i32 = 0;
+    let new_image_vec = image_vec::blank(sketch_width * sketch_height);
+    let new_image_width = *sketch_width;
+    let mut new_image = Image::new(new_image_vec, new_image_width);
+    if resizer_id.contains("west") {
+        let x_diff = *sketch_width as i32 - image_width;
+        if x_diff > 0 {
+            x0 = 0;
+            x2 = x_diff;
+        } else {
+            x0 = -x_diff;
+            x2 = 0;
+        }
+        x1 = image_width - 1;
+    } else if resizer_id.contains("east") {
+        let x_diff = *sketch_width as i32 - image_width;
+        if x_diff > 0 {
+            x1 = image_width - 1;
+        } else {
+            x1 = *sketch_width as i32 - 1;
+        }
+        x0 = 0;
+        x2 = 0;
+    } else {
+        x0 = 0;
+        x1 = image_width - 1;
+        x2 = 0;
+    }
+    if resizer_id.contains("south") {
+        let y_diff = *sketch_height as i32 - image_height;
+        if y_diff > 0 {
+            y1 = image_height - 1;
+        } else {
+            y1 = *sketch_height as i32 - 1;
+        }
+    } else {
+        y1 = image_height - 1;
+    }
+    image.copy(
+        &Point::new(x0, y0),
+        &Point::new(x1, y1),
+        &mut new_image,
+        &Point::new(x2, y2),
+    );
+    *image = new_image;
 }

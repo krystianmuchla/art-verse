@@ -1,12 +1,12 @@
 use std::cell::RefCell;
 use std::rc::Rc;
 
-use wasm_bindgen::{prelude::Closure, Clamped, JsCast, JsValue};
+use wasm_bindgen::{prelude::Closure, JsCast, JsValue};
 use web_sys::{
     CanvasRenderingContext2d, HtmlCanvasElement, HtmlCollection, HtmlElement, MouseEvent,
 };
 
-use crate::dom::Dom;
+use crate::{dom::Dom, image::Image};
 
 mod line;
 mod pencil;
@@ -107,7 +107,7 @@ pub fn entry_point(
     dom: Rc<Dom>,
     canvas: Rc<HtmlCanvasElement>,
     context: Rc<CanvasRenderingContext2d>,
-    image_vec: Rc<RefCell<Clamped<Vec<u8>>>>,
+    image: Rc<RefCell<Image>>,
 ) {
     let tools = Rc::new(dom.document.get_elements_by_class_name("tool"));
     for tool_index in 0..tools.length() {
@@ -125,7 +125,7 @@ pub fn entry_point(
             Rc::clone(&tool),
             Rc::clone(&canvas),
             Rc::clone(&context),
-            Rc::clone(&image_vec),
+            Rc::clone(&image),
         );
         tool.set_onclick(Some(on_select.as_ref().unchecked_ref()));
         on_select.forget();
@@ -139,7 +139,7 @@ fn on_tool_select(
     tool: Rc<HtmlElement>,
     canvas: Rc<HtmlCanvasElement>,
     context: Rc<CanvasRenderingContext2d>,
-    image_vec: Rc<RefCell<Clamped<Vec<u8>>>>,
+    image: Rc<RefCell<Image>>,
 ) -> Closure<dyn FnMut()> {
     Closure::<dyn FnMut()>::new(move || {
         events.borrow_mut().remove_all(&*dom);
@@ -162,14 +162,14 @@ fn on_tool_select(
                 Rc::clone(&dom),
                 Rc::clone(&canvas),
                 Rc::clone(&context),
-                Rc::clone(&image_vec),
+                Rc::clone(&image),
             ),
             "line" => line::init(
                 Rc::clone(&events),
                 Rc::clone(&dom),
                 Rc::clone(&canvas),
                 Rc::clone(&context),
-                Rc::clone(&image_vec),
+                Rc::clone(&image),
             ),
             _ => panic!("Unsupported tool"),
         }

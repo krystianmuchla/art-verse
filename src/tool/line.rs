@@ -2,14 +2,14 @@ use std::cell::RefCell;
 use std::rc::Rc;
 
 use wasm_bindgen::closure::Closure;
-use wasm_bindgen::Clamped;
 use web_sys::{CanvasRenderingContext2d, HtmlCanvasElement, MouseEvent};
 
-use crate::canvas;
 use crate::color::Color;
 use crate::dom::Dom;
+use crate::image::Image;
 use crate::point::Point;
 use crate::segment::Segment;
+use crate::{canvas, context};
 
 use super::Events;
 
@@ -18,28 +18,23 @@ pub fn init(
     dom: Rc<Dom>,
     canvas: Rc<HtmlCanvasElement>,
     context: Rc<CanvasRenderingContext2d>,
-    image_vec: Rc<RefCell<Clamped<Vec<u8>>>>,
+    image: Rc<RefCell<Image>>,
 ) {
     let start = start(
         Rc::clone(&events),
         Rc::clone(&dom),
         Rc::clone(&canvas),
         Rc::clone(&context),
-        Rc::clone(&image_vec),
+        Rc::clone(&image),
     );
     events.borrow_mut().set_body_on_mouse_down(&*dom, &start);
     start.forget();
 }
 
-pub fn put(image_vec: Rc<RefCell<Clamped<Vec<u8>>>>, image_width: u32, segment: Segment) {
+pub fn put(image: Rc<RefCell<Image>>, segment: Segment) {
     let point_a = segment.a;
     let point_b = segment.b;
-    let color = Color {
-        r: 0,
-        g: 0,
-        b: 0,
-        a: 255,
-    };
+    let color = Color::new(0, 0, 0, 255);
     let arg_0: i32;
     let val_0: i32;
     let arg_1: i32;
@@ -53,8 +48,8 @@ pub fn put(image_vec: Rc<RefCell<Clamped<Vec<u8>>>>, image_width: u32, segment: 
                 arg_1 = point_b.x;
                 val_1 = point_b.y;
                 callback = Box::new(move |arg: i32, val: i32| {
-                    let point = Point { x: arg, y: val };
-                    canvas::color_pixel(Rc::clone(&image_vec), image_width, &point, &color);
+                    let point = Point::new(arg, val);
+                    image.borrow_mut().color_pixel(&point, &color);
                 });
             } else {
                 arg_0 = point_a.x;
@@ -62,11 +57,8 @@ pub fn put(image_vec: Rc<RefCell<Clamped<Vec<u8>>>>, image_width: u32, segment: 
                 arg_1 = point_b.x;
                 val_1 = point_a.y;
                 callback = Box::new(move |arg: i32, val: i32| {
-                    let point = Point {
-                        x: arg,
-                        y: point_b.y - val + point_a.y,
-                    };
-                    canvas::color_pixel(Rc::clone(&image_vec), image_width, &point, &color);
+                    let point = Point::new(arg, point_b.y - val + point_a.y);
+                    image.borrow_mut().color_pixel(&point, &color);
                 });
             }
         } else {
@@ -76,11 +68,8 @@ pub fn put(image_vec: Rc<RefCell<Clamped<Vec<u8>>>>, image_width: u32, segment: 
                 arg_1 = point_a.x;
                 val_1 = point_b.y;
                 callback = Box::new(move |arg: i32, val: i32| {
-                    let point = Point {
-                        x: arg,
-                        y: point_a.y - val + point_b.y,
-                    };
-                    canvas::color_pixel(Rc::clone(&image_vec), image_width, &point, &color);
+                    let point = Point::new(arg, point_a.y - val + point_b.y);
+                    image.borrow_mut().color_pixel(&point, &color);
                 });
             } else {
                 arg_0 = point_b.x;
@@ -88,8 +77,8 @@ pub fn put(image_vec: Rc<RefCell<Clamped<Vec<u8>>>>, image_width: u32, segment: 
                 arg_1 = point_a.x;
                 val_1 = point_a.y;
                 callback = Box::new(move |arg: i32, val: i32| {
-                    let point = Point { x: arg, y: val };
-                    canvas::color_pixel(Rc::clone(&image_vec), image_width, &point, &color);
+                    let point = Point::new(arg, val);
+                    image.borrow_mut().color_pixel(&point, &color);
                 });
             }
         }
@@ -101,8 +90,8 @@ pub fn put(image_vec: Rc<RefCell<Clamped<Vec<u8>>>>, image_width: u32, segment: 
                 arg_1 = point_b.y;
                 val_1 = point_b.x;
                 callback = Box::new(move |arg: i32, val: i32| {
-                    let point = Point { x: val, y: arg };
-                    canvas::color_pixel(Rc::clone(&image_vec), image_width, &point, &color);
+                    let point = Point::new(val, arg);
+                    image.borrow_mut().color_pixel(&point, &color);
                 });
             } else {
                 arg_0 = point_a.y;
@@ -110,11 +99,8 @@ pub fn put(image_vec: Rc<RefCell<Clamped<Vec<u8>>>>, image_width: u32, segment: 
                 arg_1 = point_b.y;
                 val_1 = point_a.x;
                 callback = Box::new(move |arg: i32, val: i32| {
-                    let point = Point {
-                        x: point_a.x - val + point_b.x,
-                        y: arg,
-                    };
-                    canvas::color_pixel(Rc::clone(&image_vec), image_width, &point, &color);
+                    let point = Point::new(point_a.x - val + point_b.x, arg);
+                    image.borrow_mut().color_pixel(&point, &color);
                 });
             }
         } else {
@@ -124,11 +110,8 @@ pub fn put(image_vec: Rc<RefCell<Clamped<Vec<u8>>>>, image_width: u32, segment: 
                 arg_1 = point_a.y;
                 val_1 = point_b.x;
                 callback = Box::new(move |arg: i32, val: i32| {
-                    let point = Point {
-                        x: point_b.x - val + point_a.x,
-                        y: arg,
-                    };
-                    canvas::color_pixel(Rc::clone(&image_vec), image_width, &point, &color);
+                    let point = Point::new(point_b.x - val + point_a.x, arg);
+                    image.borrow_mut().color_pixel(&point, &color);
                 });
             } else {
                 arg_0 = point_b.y;
@@ -136,8 +119,8 @@ pub fn put(image_vec: Rc<RefCell<Clamped<Vec<u8>>>>, image_width: u32, segment: 
                 arg_1 = point_a.y;
                 val_1 = point_a.x;
                 callback = Box::new(move |arg: i32, val: i32| {
-                    let point = Point { x: val, y: arg };
-                    canvas::color_pixel(Rc::clone(&image_vec), image_width, &point, &color);
+                    let point = Point::new(val, arg);
+                    image.borrow_mut().color_pixel(&point, &color);
                 });
             }
         }
@@ -150,16 +133,16 @@ fn start(
     dom: Rc<Dom>,
     canvas: Rc<HtmlCanvasElement>,
     context: Rc<CanvasRenderingContext2d>,
-    image_vec: Rc<RefCell<Clamped<Vec<u8>>>>,
+    image: Rc<RefCell<Image>>,
 ) -> Closure<dyn FnMut(MouseEvent)> {
     Closure::wrap(Box::new(move |mouse_event: MouseEvent| {
         events.borrow_mut().remove_body_on_mouse_down(&*dom);
-        let point_a = canvas::point_on_canvas(Rc::clone(&canvas), &mouse_event);
+        let point_a = canvas::point_on_canvas(&*canvas, &mouse_event);
         let point_a = Rc::new(point_a);
         let advance = advance(
             Rc::clone(&canvas),
             Rc::clone(&context),
-            Rc::clone(&image_vec),
+            Rc::clone(&image),
             Rc::clone(&point_a),
         );
         events.borrow_mut().set_body_on_mouse_move(&*dom, &advance);
@@ -169,7 +152,7 @@ fn start(
             Rc::clone(&dom),
             Rc::clone(&canvas),
             Rc::clone(&context),
-            Rc::clone(&image_vec),
+            Rc::clone(&image),
             Rc::clone(&point_a),
         );
         events.borrow_mut().set_body_on_mouse_up(&*dom, &end);
@@ -181,29 +164,21 @@ fn start(
 fn advance(
     canvas: Rc<HtmlCanvasElement>,
     context: Rc<CanvasRenderingContext2d>,
-    image_vec: Rc<RefCell<Clamped<Vec<u8>>>>,
+    image: Rc<RefCell<Image>>,
     point_a: Rc<Point>,
 ) -> Closure<dyn FnMut(MouseEvent)> {
     Closure::wrap(Box::new(move |mouse_event: MouseEvent| {
-        let image_vec_clone = Rc::new(RefCell::new(image_vec.borrow().clone()));
+        let image_clone = Rc::new(RefCell::new(image.borrow().clone()));
         let segment = canvas::segment_on_canvas(
             Rc::clone(&canvas),
             (*point_a).clone(),
-            canvas::point_on_canvas(Rc::clone(&canvas), &mouse_event),
+            canvas::point_on_canvas(&*canvas, &mouse_event),
         );
         if let Some(segment) = segment {
-            put(Rc::clone(&image_vec_clone), canvas.width(), segment);
-            canvas::put_image_vec(
-                Rc::clone(&canvas),
-                Rc::clone(&context),
-                Rc::clone(&image_vec_clone),
-            );
+            put(Rc::clone(&image_clone), segment);
+            context::apply_image(&*context, &image_clone.borrow());
         } else {
-            canvas::put_image_vec(
-                Rc::clone(&canvas),
-                Rc::clone(&context),
-                Rc::clone(&image_vec),
-            );
+            context::apply_image(&*context, &image.borrow());
         }
     }) as Box<dyn FnMut(MouseEvent)>)
 }
@@ -213,7 +188,7 @@ fn end(
     dom: Rc<Dom>,
     canvas: Rc<HtmlCanvasElement>,
     context: Rc<CanvasRenderingContext2d>,
-    image_vec: Rc<RefCell<Clamped<Vec<u8>>>>,
+    image: Rc<RefCell<Image>>,
     point_a: Rc<Point>,
 ) -> Closure<dyn FnMut(MouseEvent)> {
     Closure::wrap(Box::new(move |mouse_event: MouseEvent| {
@@ -223,22 +198,18 @@ fn end(
         let segment = canvas::segment_on_canvas(
             Rc::clone(&canvas),
             (*point_a).clone(),
-            canvas::point_on_canvas(Rc::clone(&canvas), &mouse_event),
+            canvas::point_on_canvas(&*canvas, &mouse_event),
         );
         if let Some(segment) = segment {
-            put(Rc::clone(&image_vec), canvas.width(), segment);
-            canvas::put_image_vec(
-                Rc::clone(&canvas),
-                Rc::clone(&context),
-                Rc::clone(&image_vec),
-            );
+            put(Rc::clone(&image), segment);
+            context::apply_image(&*context, &image.borrow());
         }
         let start = start(
             Rc::clone(&events),
             Rc::clone(&dom),
             Rc::clone(&canvas),
             Rc::clone(&context),
-            Rc::clone(&image_vec),
+            Rc::clone(&image),
         );
         events.borrow_mut().set_body_on_mouse_down(&*dom, &start);
         start.forget();
