@@ -31,101 +31,32 @@ pub fn init(
     start.forget();
 }
 
-pub fn put(image: Rc<RefCell<Image>>, segment: Segment) {
+pub fn put(image: Rc<RefCell<Image>>, segment: &Segment) {
+    let color = Color::new(0, 0, 0, 255);
     let point_a = segment.a;
     let point_b = segment.b;
-    let color = Color::new(0, 0, 0, 255);
-    let arg_0: i32;
-    let val_0: i32;
-    let arg_1: i32;
-    let val_1: i32;
-    let callback: Box<dyn Fn(i32, i32)>;
-    if point_a.x.abs_diff(point_b.x) > point_a.y.abs_diff(point_b.y) {
-        if point_a.x < point_b.x {
-            if point_a.y < point_b.y {
-                arg_0 = point_a.x;
-                val_0 = point_a.y;
-                arg_1 = point_b.x;
-                val_1 = point_b.y;
-                callback = Box::new(move |arg: i32, val: i32| {
-                    let point = Point::new(arg, val);
-                    image.borrow_mut().color_pixel(&point, &color);
-                });
-            } else {
-                arg_0 = point_a.x;
-                val_0 = point_b.y;
-                arg_1 = point_b.x;
-                val_1 = point_a.y;
-                callback = Box::new(move |arg: i32, val: i32| {
-                    let point = Point::new(arg, point_b.y - val + point_a.y);
-                    image.borrow_mut().color_pixel(&point, &color);
-                });
-            }
-        } else {
-            if point_a.y < point_b.y {
-                arg_0 = point_b.x;
-                val_0 = point_a.y;
-                arg_1 = point_a.x;
-                val_1 = point_b.y;
-                callback = Box::new(move |arg: i32, val: i32| {
-                    let point = Point::new(arg, point_a.y - val + point_b.y);
-                    image.borrow_mut().color_pixel(&point, &color);
-                });
-            } else {
-                arg_0 = point_b.x;
-                val_0 = point_b.y;
-                arg_1 = point_a.x;
-                val_1 = point_a.y;
-                callback = Box::new(move |arg: i32, val: i32| {
-                    let point = Point::new(arg, val);
-                    image.borrow_mut().color_pixel(&point, &color);
-                });
-            }
+    let kx = if point_a.x <= point_b.x { 1 } else { -1 };
+    let ky = if point_a.y <= point_b.y { 1 } else { -1 };
+    let dx = (point_a.x - point_b.x).abs();
+    let dy = -(point_a.y - point_b.y).abs();
+    let mut e = dx + dy;
+    let mut e2: i32;
+    let mut point = point_a.clone();
+    loop {
+        image.borrow_mut().color_pixel(&point, &color);
+        if point.x == point_b.x && point.y == point_b.y {
+            break;
         }
-    } else {
-        if point_a.y < point_b.y {
-            if point_a.x < point_b.x {
-                arg_0 = point_a.y;
-                val_0 = point_a.x;
-                arg_1 = point_b.y;
-                val_1 = point_b.x;
-                callback = Box::new(move |arg: i32, val: i32| {
-                    let point = Point::new(val, arg);
-                    image.borrow_mut().color_pixel(&point, &color);
-                });
-            } else {
-                arg_0 = point_a.y;
-                val_0 = point_b.x;
-                arg_1 = point_b.y;
-                val_1 = point_a.x;
-                callback = Box::new(move |arg: i32, val: i32| {
-                    let point = Point::new(point_a.x - val + point_b.x, arg);
-                    image.borrow_mut().color_pixel(&point, &color);
-                });
-            }
-        } else {
-            if point_a.x < point_b.x {
-                arg_0 = point_b.y;
-                val_0 = point_a.x;
-                arg_1 = point_a.y;
-                val_1 = point_b.x;
-                callback = Box::new(move |arg: i32, val: i32| {
-                    let point = Point::new(point_b.x - val + point_a.x, arg);
-                    image.borrow_mut().color_pixel(&point, &color);
-                });
-            } else {
-                arg_0 = point_b.y;
-                val_0 = point_b.x;
-                arg_1 = point_a.y;
-                val_1 = point_a.x;
-                callback = Box::new(move |arg: i32, val: i32| {
-                    let point = Point::new(val, arg);
-                    image.borrow_mut().color_pixel(&point, &color);
-                });
-            }
+        e2 = 2 * e;
+        if e2 >= dy {
+            e += dy;
+            point.x += kx;
+        }
+        if e2 <= dx {
+            e += dx;
+            point.y += ky;
         }
     }
-    bresenham(arg_0, val_0, arg_1, val_1, callback);
 }
 
 fn start(
@@ -175,7 +106,7 @@ fn advance(
             canvas::point_on_canvas(&*canvas, &mouse_event),
         );
         if let Some(segment) = segment {
-            put(Rc::clone(&image_clone), segment);
+            put(Rc::clone(&image_clone), &segment);
             context::apply_image(&*context, &image_clone.borrow());
         } else {
             context::apply_image(&*context, &image.borrow());
@@ -201,7 +132,7 @@ fn end(
             canvas::point_on_canvas(&*canvas, &mouse_event),
         );
         if let Some(segment) = segment {
-            put(Rc::clone(&image), segment);
+            put(Rc::clone(&image), &segment);
             context::apply_image(&*context, &image.borrow());
         }
         let start = start(
@@ -214,20 +145,4 @@ fn end(
         events.borrow_mut().set_body_on_mouse_down(&*dom, &start);
         start.forget();
     }) as Box<dyn FnMut(MouseEvent)>)
-}
-
-fn bresenham(arg_0: i32, val_0: i32, arg_1: i32, val_1: i32, callback: Box<dyn Fn(i32, i32)>) {
-    let delta_arg = arg_1 - arg_0;
-    let delta_val = val_1 - val_0;
-    let mut p = 2 * delta_val - delta_arg;
-    let mut val = val_0;
-    for arg in arg_0..=arg_1 {
-        callback(arg, val);
-        if p > 0 {
-            val += 1;
-            p += 2 * delta_val - 2 * delta_arg;
-        } else {
-            p += 2 * delta_val;
-        }
-    }
 }

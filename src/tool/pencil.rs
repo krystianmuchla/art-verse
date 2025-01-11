@@ -76,7 +76,7 @@ fn advance(
             point_b.clone(),
         );
         if let Some(segment) = segment {
-            tool::line::put(Rc::clone(&image), segment);
+            tool::line::put(Rc::clone(&image), &segment);
             context::apply_image(&*context, &image.borrow());
         }
         *point_a.borrow_mut() = point_b;
