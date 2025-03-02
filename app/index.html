@@ -7,6 +7,12 @@
     <link rel="stylesheet" href="banner/toolbar/toolbar.css">
     <link rel="stylesheet" href="banner/toolbar/tool/tool.css">
     <link rel="stylesheet" href="banner/toolbar/tool/tool-image/tool-image.css">
+    <link rel="stylesheet" href="color-picker/color-picker.css">
+    <link rel="stylesheet" href="color-picker/color-picker-color/color-picker-color.css">
+    <link rel="stylesheet" href="color-picker/color-picker-colors/color-picker-colors.css">
+    <link rel="stylesheet" href="color-picker/color-picker-colors/color-picker-blue-color/color-picker-blue.css">
+    <link rel="stylesheet" href="color-picker/color-picker-colors/color-picker-green-color/color-picker-green.css">
+    <link rel="stylesheet" href="color-picker/color-picker-colors/color-picker-red-color/color-picker-red.css">
     <link rel="stylesheet" href="workspace/workspace.css">
     <link rel="stylesheet" href="workspace/canvas-container/canvas-container.css">
     <link rel="stylesheet" href="workspace/canvas-container/canvas/canvas.css">
@@ -37,6 +43,9 @@
                 <path d="M 49 1 L 1 49" fill="none" stroke="black" stroke-width="2" stroke-linecap="round"/>
             </svg>
         </div>
+        <div id="color" class="tool">
+
+        </div>
     </div>
 </div>
 <div id="workspace">
@@ -48,6 +57,17 @@
         <div id="south-west-resizer" class="resizer"></div>
         <div id="south-resizer" class="resizer"></div>
         <div id="south-east-resizer" class="resizer"></div>
+    </div>
+</div>
+<div class="modal">
+    <div id="color-picker">
+        <div id="color-picker-color"></div>
+        <div id="color-picker-colors">
+            <input id="color-picker-red" class="color-picker-color" type="text">
+            <input id="color-picker-green" class="color-picker-color" type="text">
+            <input id="color-picker-blue" class="color-picker-color" type="text">
+        </div>
+        <button id="pick-color">Pick</button>
     </div>
 </div>
 </body>

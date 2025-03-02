@@ -26,7 +26,9 @@ features = [
   'HtmlCanvasElement',
   'HtmlCollection',
   'HtmlElement',
+  'HtmlInputElement',
   'ImageData',
+  'InputEvent',
   'MouseEvent',
   'Window',
 ]

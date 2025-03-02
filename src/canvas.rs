@@ -1,15 +1,15 @@
 use std::cell::RefCell;
 use std::rc::Rc;
 
-use wasm_bindgen::prelude::*;
-use web_sys::{CanvasRenderingContext2d, HtmlCanvasElement, MouseEvent};
-
+use crate::color::Color;
 use crate::dom::Dom;
 use crate::image::Image;
 use crate::point::Point;
 use crate::resizer;
 use crate::segment::Segment;
 use crate::tool;
+use wasm_bindgen::prelude::*;
+use web_sys::{CanvasRenderingContext2d, HtmlCanvasElement, MouseEvent};
 
 pub fn entry_point(dom: Rc<Dom>) {
     let canvas = dom
@@ -32,6 +32,7 @@ pub fn entry_point(dom: Rc<Dom>) {
     let image = Image::new(image_data.data(), canvas.width());
     let image = Rc::new(RefCell::new(image));
     let tool_events = Rc::new(RefCell::new(tool::Events::new()));
+    let color = Rc::new(RefCell::new(Color::new(0, 0, 0, 255)));
     resizer::entry_point(
         Rc::clone(&tool_events),
         Rc::clone(&dom),
@@ -45,6 +46,7 @@ pub fn entry_point(dom: Rc<Dom>) {
         Rc::clone(&canvas),
         Rc::clone(&context),
         Rc::clone(&image),
+        Rc::clone(&color),
     );
 }
 

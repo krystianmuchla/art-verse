@@ -19,6 +19,7 @@ pub fn init(
     canvas: Rc<HtmlCanvasElement>,
     context: Rc<CanvasRenderingContext2d>,
     image: Rc<RefCell<Image>>,
+    color: Rc<RefCell<Color>>,
 ) {
     let start = start(
         Rc::clone(&events),
@@ -26,13 +27,13 @@ pub fn init(
         Rc::clone(&canvas),
         Rc::clone(&context),
         Rc::clone(&image),
+        Rc::clone(&color),
     );
     events.borrow_mut().set_body_on_mouse_down(&*dom, &start);
     start.forget();
 }
 
-pub fn put(image: Rc<RefCell<Image>>, segment: &Segment) {
-    let color = Color::new(0, 0, 0, 255);
+pub fn put(image: Rc<RefCell<Image>>, segment: &Segment, color: &Color) {
     let point_a = segment.a;
     let point_b = segment.b;
     let kx = if point_a.x <= point_b.x { 1 } else { -1 };
@@ -65,6 +66,7 @@ fn start(
     canvas: Rc<HtmlCanvasElement>,
     context: Rc<CanvasRenderingContext2d>,
     image: Rc<RefCell<Image>>,
+    color: Rc<RefCell<Color>>,
 ) -> Closure<dyn FnMut(MouseEvent)> {
     Closure::wrap(Box::new(move |mouse_event: MouseEvent| {
         events.borrow_mut().remove_body_on_mouse_down(&*dom);
@@ -75,6 +77,7 @@ fn start(
             Rc::clone(&context),
             Rc::clone(&image),
             Rc::clone(&point_a),
+            Rc::clone(&color),
         );
         events.borrow_mut().set_body_on_mouse_move(&*dom, &advance);
         advance.forget();
@@ -85,6 +88,7 @@ fn start(
             Rc::clone(&context),
             Rc::clone(&image),
             Rc::clone(&point_a),
+            Rc::clone(&color),
         );
         events.borrow_mut().set_body_on_mouse_up(&*dom, &end);
         events.borrow_mut().set_body_on_mouse_leave(&*dom, &end);
@@ -97,6 +101,7 @@ fn advance(
     context: Rc<CanvasRenderingContext2d>,
     image: Rc<RefCell<Image>>,
     point_a: Rc<Point>,
+    color: Rc<RefCell<Color>>,
 ) -> Closure<dyn FnMut(MouseEvent)> {
     Closure::wrap(Box::new(move |mouse_event: MouseEvent| {
         let image_clone = Rc::new(RefCell::new(image.borrow().clone()));
@@ -106,7 +111,7 @@ fn advance(
             canvas::point_on_canvas(&*canvas, &mouse_event),
         );
         if let Some(segment) = segment {
-            put(Rc::clone(&image_clone), &segment);
+            put(Rc::clone(&image_clone), &segment, &*color.borrow());
             context::apply_image(&*context, &image_clone.borrow());
         } else {
             context::apply_image(&*context, &image.borrow());
@@ -121,6 +126,7 @@ fn end(
     context: Rc<CanvasRenderingContext2d>,
     image: Rc<RefCell<Image>>,
     point_a: Rc<Point>,
+    color: Rc<RefCell<Color>>,
 ) -> Closure<dyn FnMut(MouseEvent)> {
     Closure::wrap(Box::new(move |mouse_event: MouseEvent| {
         events.borrow_mut().remove_body_on_mouse_move(&*dom);
@@ -132,7 +138,7 @@ fn end(
             canvas::point_on_canvas(&*canvas, &mouse_event),
         );
         if let Some(segment) = segment {
-            put(Rc::clone(&image), &segment);
+            put(Rc::clone(&image), &segment, &*color.borrow());
             context::apply_image(&*context, &image.borrow());
         }
         let start = start(
@@ -141,6 +147,7 @@ fn end(
             Rc::clone(&canvas),
             Rc::clone(&context),
             Rc::clone(&image),
+            Rc::clone(&color),
         );
         events.borrow_mut().set_body_on_mouse_down(&*dom, &start);
         start.forget();

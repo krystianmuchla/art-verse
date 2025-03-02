@@ -6,8 +6,10 @@ use web_sys::{
     CanvasRenderingContext2d, HtmlCanvasElement, HtmlCollection, HtmlElement, MouseEvent,
 };
 
+use crate::color::Color;
 use crate::{dom::Dom, image::Image};
 
+mod color_picker;
 mod line;
 mod pencil;
 
@@ -108,6 +110,7 @@ pub fn entry_point(
     canvas: Rc<HtmlCanvasElement>,
     context: Rc<CanvasRenderingContext2d>,
     image: Rc<RefCell<Image>>,
+    color: Rc<RefCell<Color>>,
 ) {
     let tools = Rc::new(dom.document.get_elements_by_class_name("tool"));
     for tool_index in 0..tools.length() {
@@ -126,10 +129,12 @@ pub fn entry_point(
             Rc::clone(&canvas),
             Rc::clone(&context),
             Rc::clone(&image),
+            Rc::clone(&color),
         );
         tool.set_onclick(Some(on_select.as_ref().unchecked_ref()));
         on_select.forget();
     }
+    color_picker::entry_point(Rc::clone(&dom), Rc::clone(&color));
 }
 
 fn on_tool_select(
@@ -140,6 +145,7 @@ fn on_tool_select(
     canvas: Rc<HtmlCanvasElement>,
     context: Rc<CanvasRenderingContext2d>,
     image: Rc<RefCell<Image>>,
+    color: Rc<RefCell<Color>>,
 ) -> Closure<dyn FnMut()> {
     Closure::<dyn FnMut()>::new(move || {
         events.borrow_mut().remove_all(&*dom);
@@ -163,6 +169,7 @@ fn on_tool_select(
                 Rc::clone(&canvas),
                 Rc::clone(&context),
                 Rc::clone(&image),
+                Rc::clone(&color),
             ),
             "line" => line::init(
                 Rc::clone(&events),
@@ -170,6 +177,10 @@ fn on_tool_select(
                 Rc::clone(&canvas),
                 Rc::clone(&context),
                 Rc::clone(&image),
+                Rc::clone(&color),
+            ),
+            "color" => color_picker::init(
+                Rc::clone(&dom),
             ),
             _ => panic!("Unsupported tool"),
         }

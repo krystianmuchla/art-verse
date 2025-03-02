@@ -10,6 +10,25 @@ body {
     margin: 0;
     height: 100%;
     font-family: "SchoolbellRegular", cursive;
+    font-size: 18px;
+}
+
+input[type='text'] {
+    font-family: "SchoolbellRegular", cursive;
+    font-size: 18px;
+}
+
+.modal {
+    display: grid;
+    position: fixed;
+    visibility: hidden;
+    z-index: 1;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0,0,0,0.4);
 }
 
 @font-face {
