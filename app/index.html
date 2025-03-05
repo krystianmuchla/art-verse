@@ -2,25 +2,7 @@
 <html lang="en">
 <head>
     <title>ArtVerse</title>
-    <link rel="stylesheet" href="index.css">
-    <link rel="stylesheet" href="banner/banner.css">
-    <link rel="stylesheet" href="banner/toolbar/toolbar.css">
-    <link rel="stylesheet" href="banner/toolbar/tool/tool.css">
-    <link rel="stylesheet" href="banner/toolbar/tool/tool-image/tool-image.css">
-    <link rel="stylesheet" href="color-picker/color-picker.css">
-    <link rel="stylesheet" href="color-picker/color-picker-color/color-picker-color.css">
-    <link rel="stylesheet" href="color-picker/color-picker-colors/color-picker-colors.css">
-    <link rel="stylesheet" href="color-picker/color-picker-colors/color-picker-blue-color/color-picker-blue.css">
-    <link rel="stylesheet" href="color-picker/color-picker-colors/color-picker-green-color/color-picker-green.css">
-    <link rel="stylesheet" href="color-picker/color-picker-colors/color-picker-red-color/color-picker-red.css">
-    <link rel="stylesheet" href="workspace/workspace.css">
-    <link rel="stylesheet" href="workspace/canvas-container/canvas-container.css">
-    <link rel="stylesheet" href="workspace/canvas-container/canvas/canvas.css">
-    <link rel="stylesheet" href="workspace/canvas-container/east-resizer/east-resizer.css">
-    <link rel="stylesheet" href="workspace/canvas-container/south-east-resizer/south-east-resizer.css">
-    <link rel="stylesheet" href="workspace/canvas-container/south-resizer/south-resizer.css">
-    <link rel="stylesheet" href="workspace/canvas-container/south-west-resizer/south-west-resizer.css">
-    <link rel="stylesheet" href="workspace/canvas-container/west-resizer/west-resizer.css">
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
 <script type="module">
@@ -29,43 +11,37 @@
     await init();
     entry_point();
 </script>
-<div id="banner">
-    <div id="toolbar">
-        <div id="pencil" class="tool">
-            <svg class="tool-image" viewBox="0 0 50 50">
-                <path d="M 31 1 L 10 22 L 1 49 L 28 40 L 49 19" fill="none" stroke="black" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
-                <path d="M 10 22 Q 22 28, 28 40" fill="none" stroke="black" stroke-width="2"/>
-                <path d="M 4 41 L 1 49 L 9 46 Q 7.5 42.5, 4 41" fill="black"/>
-            </svg>
+<div class="flex items-center justify-center">
+    <div class="flex p-2 gap-2 items-center justify-center bg-white rounded-lg">
+        <div id="pencil" class="tool flex w-10 h-10 border-2 rounded-lg">
+            <img src="pen.svg" class="w-full h-full" alt="pen">
         </div>
-        <div id="line" class="tool">
-            <svg class="tool-image" viewBox="0 0 50 50">
-                <path d="M 49 1 L 1 49" fill="none" stroke="black" stroke-width="2" stroke-linecap="round"/>
-            </svg>
+        <div id="line" class="tool flex w-10 h-10 border-2 rounded-lg">
+            <img src="line.svg" class="w-full h-full" alt="line">
         </div>
-        <div id="color" class="tool">
+        <div id="color" class="tool flex w-10 h-10 border-2 rounded-lg">
 
         </div>
     </div>
 </div>
-<div id="workspace">
-    <div id="canvas-container">
-        <div id="west-resizer" class="resizer"></div>
+<div class="flex items-start justify-center">
+    <div class="grid grid-rows-[auto_auto] grid-cols-[auto_auto_auto] items-center justify-items-center">
+        <div id="west-resizer" class="resizer w-2 h-full cursor-ew-resize"></div>
         <canvas id="canvas" width="250" height="250">
         </canvas>
-        <div id="east-resizer" class="resizer"></div>
-        <div id="south-west-resizer" class="resizer"></div>
-        <div id="south-resizer" class="resizer"></div>
-        <div id="south-east-resizer" class="resizer"></div>
+        <div id="east-resizer" class="resizer w-2 h-full cursor-ew-resize"></div>
+        <div id="south-west-resizer" class="resizer w-2 h-2 cursor-nesw-resize"></div>
+        <div id="south-resizer" class="resizer w-full h-2 cursor-ns-resize"></div>
+        <div id="south-east-resizer" class="resizer w-2 h-2 cursor-nwse-resize"></div>
     </div>
 </div>
 <div class="modal">
-    <div id="color-picker">
-        <div id="color-picker-color"></div>
-        <div id="color-picker-colors">
-            <input id="color-picker-red" class="color-picker-color" type="text">
-            <input id="color-picker-green" class="color-picker-color" type="text">
-            <input id="color-picker-blue" class="color-picker-color" type="text">
+    <div id="color-picker" class="flex flex-col self-center justify-self-center gap-4 p-5 rounded-xl bg-white">
+        <div id="color-picker-color" class="flex h-10 border-2 rounded-lg"></div>
+        <div class="flex flex-row gap-3">
+            <input id="color-picker-red" class="color-picker-color w-14 h-10 border-2 border-red-700 rounded-lg outline-none text-center" type="text">
+            <input id="color-picker-green" class="color-picker-color w-14 h-10 border-2 border-green-700 rounded-lg outline-none text-center" type="text">
+            <input id="color-picker-blue" class="color-picker-color w-14 h-10 border-2 border-blue-700 rounded-lg outline-none text-center" type="text">
         </div>
         <button id="pick-color">Pick</button>
     </div>

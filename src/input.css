@@ -1,7 +1,4 @@
-html {
-    height: 100%;
-    background-color: grey;
-}
+@import "tailwindcss";
 
 body {
     display: grid;
@@ -11,6 +8,21 @@ body {
     height: 100%;
     font-family: "SchoolbellRegular", cursive;
     font-size: 18px;
+}
+
+#canvas {
+    image-rendering: pixelated;
+    background-color: white;
+}
+
+@font-face {
+    font-family: SchoolbellRegular;
+    src: url('Schoolbell-Regular.ttf');
+}
+
+html {
+    height: 100%;
+    background-color: grey;
 }
 
 input[type='text'] {
@@ -31,7 +43,14 @@ input[type='text'] {
     background-color: rgba(0,0,0,0.4);
 }
 
-@font-face {
-    font-family: SchoolbellRegular;
-    src: url('Schoolbell-Regular.ttf');
+.tool {
+    border-color: transparent;
+}
+
+.tool:hover {
+    border-color: grey;
+}
+
+.tool.selected {
+    border-color: black;
 }
