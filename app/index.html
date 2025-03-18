@@ -11,6 +11,7 @@
     await init();
     entry_point();
 </script>
+<script src="color-picker.js" defer></script>
 <div class="flex items-center justify-center">
     <div class="flex p-2 gap-2 items-center justify-center bg-white rounded-lg">
         <div id="pencil" class="tool flex w-10 h-10 border-2 rounded-lg">
@@ -39,9 +40,15 @@
     <div id="color-picker" class="flex flex-col self-center justify-self-center gap-4 p-5 rounded-xl bg-white">
         <div id="color-picker-color" class="flex h-10 border-2 rounded-lg"></div>
         <div class="flex flex-row gap-3">
-            <input id="color-picker-red" class="color-picker-color w-14 h-10 border-2 border-red-700 rounded-lg outline-none text-center" type="text">
-            <input id="color-picker-green" class="color-picker-color w-14 h-10 border-2 border-green-700 rounded-lg outline-none text-center" type="text">
-            <input id="color-picker-blue" class="color-picker-color w-14 h-10 border-2 border-blue-700 rounded-lg outline-none text-center" type="text">
+            <input id="color-picker-red"
+                   class="color-picker-color w-14 h-10 border-2 border-red-700 rounded-lg outline-none text-center"
+                   type="text">
+            <input id="color-picker-green"
+                   class="color-picker-color w-14 h-10 border-2 border-green-700 rounded-lg outline-none text-center"
+                   type="text">
+            <input id="color-picker-blue"
+                   class="color-picker-color w-14 h-10 border-2 border-blue-700 rounded-lg outline-none text-center"
+                   type="text">
         </div>
         <button id="pick-color">Pick</button>
     </div>

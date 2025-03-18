@@ -7,8 +7,16 @@ use wasm_bindgen::closure::Closure;
 use wasm_bindgen::JsCast;
 use web_sys::{HtmlCollection, HtmlElement, HtmlInputElement, InputEvent};
 
-pub fn entry_point(dom: Rc<Dom>, color: Rc<RefCell<Color>>) {
+pub fn init(dom: Rc<RefCell<Dom>>, color: Rc<RefCell<Color>>) {
+    dom.borrow()
+        .tool_bar
+        .color
+        .class_list()
+        .add_1("selected")
+        .unwrap();
+    show_color_picker(Rc::clone(&dom));
     let color_picker_color = dom
+        .borrow()
         .document
         .get_element_by_id("color-picker-color")
         .unwrap()
@@ -16,6 +24,7 @@ pub fn entry_point(dom: Rc<Dom>, color: Rc<RefCell<Color>>) {
         .unwrap();
     let color_picker_color = Rc::new(color_picker_color);
     let color_inputs = dom
+        .borrow()
         .document
         .get_elements_by_class_name("color-picker-color");
     let color_inputs = Rc::new(color_inputs);
@@ -33,20 +42,7 @@ pub fn entry_point(dom: Rc<Dom>, color: Rc<RefCell<Color>>) {
         color_input.set_oninput(Some(on_input.as_ref().unchecked_ref()));
         on_input.forget();
     }
-    let pick_color = dom
-        .document
-        .get_element_by_id("pick-color")
-        .unwrap()
-        .dyn_into::<HtmlElement>()
-        .unwrap();
-    let onclick = Closure::<dyn FnMut()>::new(move || hide_color_picker(&*dom));
-    pick_color.set_onclick(Some(onclick.as_ref().unchecked_ref()));
-    onclick.forget();
     read_color(&*color_picker_color, &*color_inputs, &*color.borrow_mut());
-}
-
-pub fn init(dom: Rc<Dom>) {
-    show_color_picker(&*dom);
 }
 
 fn on_input(
@@ -131,8 +127,9 @@ fn write_color(color_inputs: &HtmlCollection, color_picker_color: &HtmlElement, 
         .unwrap();
 }
 
-fn show_color_picker(dom: &Dom) {
-    dom.document
+fn show_color_picker(dom: Rc<RefCell<Dom>>) {
+    dom.borrow()
+        .document
         .get_element_by_id("color-picker")
         .unwrap()
         .parent_element()
@@ -142,23 +139,4 @@ fn show_color_picker(dom: &Dom) {
         .style()
         .set_property("visibility", "visible")
         .unwrap();
-}
-
-fn hide_color_picker(dom: &Dom) {
-    dom.document
-        .get_element_by_id("color")
-        .unwrap()
-        .class_list()
-        .remove_1("selected")
-        .unwrap();
-    dom.document
-        .get_element_by_id("color-picker")
-        .unwrap()
-        .parent_element()
-        .unwrap()
-        .dyn_into::<HtmlElement>()
-        .unwrap()
-        .style()
-        .set_property("visibility", "hidden")
-        .unwrap()
 }
